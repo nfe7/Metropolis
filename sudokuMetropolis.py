@@ -44,11 +44,12 @@ def e(puzzle):
             energy += conflict(puzzle, i, j, puzzle[i][j])
     return energy/2
 
+
 def metropolis(puzzle, clues):
     t = float(input("Enter the temperature (suggested 0.36 < t < 0.44): "))
     startTime = time.time()
     fill(puzzle)
-
+           
     energy = e(puzzle)
     print("\nChosen temperature: ",t)
     print("\nInitial energy after random fill: ",energy)
@@ -56,17 +57,22 @@ def metropolis(puzzle, clues):
     n = 0
     delta = 0
 
+    # When we reach the ground state (energy = 0) and the puzzle is solved with no conflicts
     while energy > 0:
         accept = 0
         deltaE = 0
         proba = 0
         n+=1
-
+               
+        # Pick random cell to work on   
         U1 = random.randint(0,8)
         U2 = random.randint(0,8)
 
+        # Not allowed to edit clue cells       
         if not clues[U1][U2]:
+                   
             U = random.randint(1,9)
+                   
             if U != puzzle[U1][U2]: 
                 deltaE = conflict(puzzle, U1, U2, U) - conflict(puzzle, U1, U2, puzzle[U1][U2])
                 proba = prob(deltaE, t)
@@ -90,6 +96,7 @@ def metropolis(puzzle, clues):
     print("Time:\t ",timeElapsed)     
     return True
 
+# Filling the puzzle with random values to start our algorithm
 def fill(puzzle):
     for i in range(9):
         for j in range(9):
@@ -97,7 +104,14 @@ def fill(puzzle):
                  puzzle[i][j] = random.randint(1,9)
     return
 
-def prob(deltaE, t):
+
+'''
+Our acceptance probability
+If the change in energy is less (less conflicts), then we accept it
+If change in energy is more (more conflicts), we accept with probability e^(-delta/t) so 
+that we prevent the algorithm from stopping in a local minimum
+'''
+def prob(deltaE, t):-
     if deltaE <= 0:
         return 1
     if deltaE > 0:
